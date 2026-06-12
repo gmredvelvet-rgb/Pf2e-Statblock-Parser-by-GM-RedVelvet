@@ -39,6 +39,7 @@ jobs:
             module/parsers.js \
             module/utils.js \
             templates/ \
+            styles/ \
             LICENSE \
             README.md \
             CHANGELOG

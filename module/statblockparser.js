@@ -166,7 +166,9 @@ export class PF2eStatblockParser {
             const foundSize = ["tiny","small","medium","large","huge","gargantuan"].find(s => line.includes(s));
             if (foundSize) {
                 size = SIZE_CODES[foundSize] || "med";
-                traits = line.split(/\s+/).filter(t => !["creature", foundSize].includes(t)).map(t => t.charAt(0).toUpperCase() + t.slice(1));
+                traits = line.split(/[\s,;]+/)
+                    .map(t => t.replace(/[^a-z0-9\-]/g, "").trim())
+                    .filter(t => t && !["creature", foundSize, "neutral", "lawful", "chaotic", "good", "evil", "unaligned"].includes(t));
             }
         }
         // Perception senses
@@ -1400,7 +1402,7 @@ export class PF2eStatblockParser {
         const allowed = ["action","reaction","free","passive"];
         const finalActionType = allowed.includes(actionType) ? actionType : "passive";
 
-        let actionData = null;
+        let actionData = { value: null };
         if (finalActionType === "action") {
             const val = actions && actions >= 1 && actions <= 3 ? actions : 1;
             actionData = { value: val };
