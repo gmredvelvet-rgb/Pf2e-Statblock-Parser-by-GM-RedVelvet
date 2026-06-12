@@ -1,0 +1,45 @@
+<form class="pf2e-sbp-form">
+
+    <h2 class="pf2e-sbp-title">PF2e Statblock Parser</h2>
+
+    <div class="form-group">
+        <label for="dataFormat">Formato de Entrada</label>
+        <select name="dataFormat" id="dataFormat">
+            {{#each formats}}
+            <option value="{{this.id}}">{{this.name}}</option>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class="form-group pf2e-sbp-examples">
+        <button type="button" id="sbp-copy-example" class="pf2e-sbp-example-btn" title="Copy an example statblock to the clipboard">
+            <i class="fas fa-copy"></i> Example Statblock
+        </button>
+        {{#if aztecsMode}}
+        <button type="button" id="sbp-copy-aztecs-example" class="pf2e-sbp-example-btn pf2e-sbp-aztecs-btn" title="Copy an example statblock with body parts (aztecs) to the clipboard">
+            <i class="fas fa-puzzle-piece"></i> Example with Parts
+        </button>
+        {{/if}}
+    </div>
+
+    <div class="form-group">
+        <label for="statblock">Paste your PF2e statblock here:</label>
+        <textarea name="statblock" id="statblock" rows="18" placeholder="Paste or type the statblock here...&#10;&#10;Use the buttons above to copy an example of the expected format."></textarea>
+    </div>
+
+    <div class="form-group pf2e-sbp-buttons">
+        <button type="submit" class="pf2e-sbp-submit">
+            <i class="fas fa-check"></i> Parse Statblock
+        </button>
+        <button type="button" class="pf2e-sbp-cancel" onclick="ui.activeWindow?.close();">
+            <i class="fas fa-times"></i> Cancel
+        </button>
+    </div>
+
+    <div class="pf2e-sbp-kofi">
+        <a href="https://ko-fi.com/thegmstudio" target="_blank" class="pf2e-sbp-kofi-link" title="Support GM RedVelvet on Ko-fi">
+            <i class="fas fa-mug-hot"></i> If you enjoy this module, consider buying me a coffee
+        </a>
+    </div>
+
+</form>

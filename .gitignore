@@ -1,0 +1,17 @@
+# Claude Code settings
+.claude/
+
+# Archivos de parser no usados (solo stubs de compatibilidad)
+module/pcgenparser.js
+module/vttesparser.js
+module/WEB2.html
+
+# Sub-módulo separado (no es parte del statblock parser)
+bvuilder/
+
+# Packs de FoundryVTT (no usados por este módulo, packs: [] en module.json)
+packs/
+
+# Build / distribución
+dist/
+*.zip

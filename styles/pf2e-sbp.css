@@ -1,0 +1,21 @@
+/* ── Ko-fi support link ─────────────────────────────────────────────────── */
+.pf2e-sbp-kofi {
+    margin-top: 8px;
+    text-align: center;
+}
+
+.pf2e-sbp-kofi-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72em;
+    color: #c0392b !important;
+    text-decoration: none !important;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+}
+
+.pf2e-sbp-kofi-link:hover {
+    opacity: 1;
+    text-decoration: underline !important;
+}
