@@ -1,0 +1,37 @@
+{
+  "id": "pf2e-statblock-parser",
+  "title": "PF2e Statblock Parser",
+  "description": "Convierte statblocks de Pathfinder 2e en Actores (NPC) dentro de Foundry VTT. Soporta parseo estándar y monstruos con partes (pf2e-aztecs-rip-n-tear).",
+  "version": "0.1.0",
+  "authors": [
+    { "name": "GM RedVelvet", "url": "https://github.com/gmredvelvet" }
+  ],
+  "relationships": {
+    "systems": [
+      {
+        "id": "pf2e",
+        "type": "system",
+        "compatibility": { "minimum": "6.0.0" }
+      }
+    ],
+    "optional": [
+      {
+        "id": "pf2e-aztecs-rip-n-tear",
+        "type": "module"
+      }
+    ]
+  },
+  "esmodules": [
+    "./module/main.js",
+    "./module/text-input.js"
+  ],
+  "styles": [],
+  "packs": [],
+  "url": "https://github.com/gmredvelvet/pf2e-statblock-parser",
+  "manifest": "https://raw.githubusercontent.com/gmredvelvet/pf2e-statblock-parser/main/module.json",
+  "download": "https://github.com/gmredvelvet/pf2e-statblock-parser/releases/latest/download/module.zip",
+  "compatibility": {
+    "minimum": "12",
+    "verified": "13"
+  }
+}

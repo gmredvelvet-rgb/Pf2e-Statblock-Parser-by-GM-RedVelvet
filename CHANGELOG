@@ -1,0 +1,238 @@
+0.5.5:
+- General updates:
+--- Updated to support FoundryVTT v10.
+
+0.5.4:
+- General updates:
+--- Added support for the DR/ER modifiers and data structure changes for Starfinder v0.18.
+
+0.5.3:
+- General updates:
+--- Tested and confirmed Foundry v9 compatibility.
+
+0.5.2:
+- General updates:
+--- Now outputting NPCs as the new NPC type if combined with Starfinder v0.16.
+--- Minimum supported system version is now Starfinder v0.12.
+- PAIZO Block updates:
+--- Now parsing the spell save DC value into the save DC field.
+
+0.5.1:
+- General updates:
+--- Marking support for FoundryVTT 0.8.9
+
+0.5.0:
+- General updates:
+--- Implemented support for Starfinder v0.13.0's upcoming damage types update. (Works backwards compatible with Starfinder v0.12.1)
+--- Marked VTTES plugin and PCGen XML as deprecated. These do not seem to be used (anymore), and aren't functional since the Foundry v0.8 update anyway.
+- PAIZO Block updates:
+--- Added loot container, including a duplicate copy of weapons, left intentionally unequipped, so you can just drag the loot container onto the world.
+--- Setting up token defaults, name and bars now always visible for owner, and stamina bar replaced with resolve, token size now follows NPC size.
+--- Updated description parsing to no longer double-print "Description" header.
+--- Updated special ability parsing to generate custom features for abilities that are not recognized by any compendia.
+--- Improved critical parsing, it now parses the whole critical effect into the critical effects field.
+--- Improved immunities parsing, it now separates unrecognized immunities with ; instead of ,.
+--- Improved language parsing, it can now handle '1 other language known in life' as a single entry.
+--- Improved weaknesses parsing, it now properly checks the appropriate weakness if it is a standard weakness, and multiple special weaknesses are now concatenated by ; instead.
+
+0.4.6:
+- PAIZO Block updates:
+--- Improved spellbook parsing, now assigns the proper spell level to the spell, and updates spells per day correctly again.
+--- Fixed damage parsing on attacks.
+
+0.4.5:
+- PAIZO Block updates:
+--- Fixed a freeze when parsing spells with a particular formatting style, using a — instead of a -.
+
+0.4.4:
+- General updates:
+--- Added support for Starfinder v0.12.0's upcoming speed update. (Works backwards compatible with Starfinder v0.11.4)
+- PAIZO Block updates:
+--- Updated some more parsing behavior to work with Foundry v0.8 that was missed previously.
+--- Fixed mistake in item data parsing causing attack roll bonus etc. to be set incorrectly.
+--- Fixed battery parsing to work with battery name change.
+--- Fixed a rare problem with telepathic creatures.
+
+0.4.3:
+- General updates:
+--- Marked compatible with Foundry v0.8.8
+--- Updated system entry from systems to system.
+
+0.4.2:
+- General updates:
+--- Marked compatible with Foundry v0.8.7
+--- Fixed test for actor creation permissions for clients.
+--- Fixed item creation logic, should also more robustly equip and mark as proficient.
+
+0.4.1:
+- General updates:
+--- Marked compatible with Foundry v0.8.6
+- PAIZO Block updates:
+--- Added support for non-combat abilities in the parsing.
+
+0.3.15:
+- PAIZO Block updates:
+--- Implemented a simple mechanism for finding the name and CR of a creature if they are on separate lines.
+--- Sanitize input by getting rid of \r\n in favor of just \n for newline parsing. This should address cross-platform parsing surprises.
+--- Fixed the parsing of DR that was not a singular value, i.e. "5 / piercing or slashing" would throw a parsing error.
+
+0.3.14:
+- PAIZO Block updates:
+--- Added support for the latest ecology changes in Starfinder v0.9.
+--- Fixed Issue #20: Parser ignored attack damage rolls if it had no additional damage on top of the roll.
+
+0.3.13:
+- General updates:
+--- Marked compatible with Foundry v0.7.9
+- PAIZO Block updates:
+--- Languages (and other traits that have custom fields) now correctly separate their entries using semicolon instead of comma.
+--- Additional speed properties now parse correctly.
+
+0.3.12:
+- General updates:
+--- Marked compatible with Foundry v0.7.5
+
+0.3.11:
+- General updates:
+--- Weapons and equipment are now always proficient.
+- PAIZO Block updates:
+--- Added 'constant' as a supported keyword for spell-like abilities.
+--- Spell-like abilities no longer mark in the spell name how many times per day it is allowed, and instead fill it into the uses field.
+
+0.3.10:
+- PAIZO Block updates:
+--- Added 'constant' as a supported keyword for spell-like abilities.
+--- Spell-like abilities no longer overwrite the spell activation cost, and instead mark in the spell name how many times per day it is allowed.
+--- Fixing an item merging issue when the quantity is not defined.
+
+
+0.3.9:
+- General updates:
+--- Added "Parse Statblock" button to the right-click context menu of an actor folder. The parsed NPC will appear in this folder.
+--- Improved item matching, it no longer cares for case sensitivity while trying to find compendium entries.
+--- Improved spell parsing by ignoring * in the names.
+- VTTES support updates:
+--- Added support to parse out resistances.
+--- Added support to parse out immunities.
+--- Added support to parse out weaknesses.
+--- Added support to parse out damage reduction.
+--- Added support to parse out spell resistance.
+--- Added support to parse out ranged_spell_attack and melee_spell_attack bonuses and assigning them to the spells.
+--- Improved weapon damage type parsing.
+
+0.3.8:
+- Marked compatibility with FoundryVTT v0.6.6.
+
+0.3.7:
+- PAIZO Block updates:
+--- Improved spell parsing by assigning them the correct preparation settings and activation cost.
+
+0.3.6:
+- General updates:
+--- Improved item matching, it should now find batteries and frag grenades.
+- PAIZO Block updates:
+--- Fixed "P & C" damage type not parsed correctly.
+--- Fixed ; getting parsed out of attack damage sections, confusing the damage type parsing.
+--- Fixed speed special values not getting parsed properly.
+--- Abilities being parsed may now pull from the class features and feats compendiums too.
+--- Refactored usage of built-in Universal Creature Rules to SFRPG system Universal Creature Rules.
+--- Tweaked item parsing logic to prevent duplicate item parsing.
+--- Improved credstick parsing.
+--- Spells now parse their casting times into the appropriate fields, except for spell-like abilities, and at will spells.
+- VTTES support updates:
+--- Fixing a parsing error when engagement_range was missing from attacks.
+--- Fixing a parsing error when attacks didn't have damage_total specified. For example, smoke and stickybomb grenades.
+
+0.3.5:
+- VTTES support has been updated:
+--- Added support for parsing bio into Biography.
+--- GM Notes are now parsed into Biography as GM secret.
+--- Skill notes are now parsed into the Biography as GM secret.
+--- Tactics, environment, and organization are now parsed into the Biography as GM secret.
+--- Added spell parsing.
+--- Fixed a bug with language parsing ignoring ; as a splitting token.
+--- Default NPC size is now medium.
+--- Added size parsing.
+--- Attacks now parse with attack and damage bonuses correctly copied from the data.
+--- Disabled ability score usage for NPC weapons, and removed ability score adjustment.
+--- Ability Save DCs are now copied over.
+--- Added support for Space and Reach, which will be available in SFRPG from version 0.4.
+--- Pasting in a VTTES json now automatically switches the text input mode to VTTES json.
+--- VTTES support is no longer considered highly incomplete.
+- Paizo Block updates:
+--- Disabled ability score usage for NPC weapons, and removed ability score adjustment.
+--- Added support for Space and Reach, which will be available in SFRPG from version 0.4.
+
+0.3.4:
+- Parser no longer fails on space and reach.
+- Fixed weapon types getting overwritten even though they were valid from the item data.
+- Fixed a parsing error when keywords were partially contained in values, such as "sp" contained in "spatial".
+- Added additional error reporting when an item has no name due to parsing mishaps.
+- Combining attack names when an attack fails to parse, propagating it to the next attack. This fixes an issue where one attack such as "claw or incorporeal claw" would get parsed as two separate attacks.
+- Added support for auras, aura field will be available in sfrpg system from version 0.4.
+- Fixed various little parsing mistakes.
+- Added more support for VTTES json files, it now parses most of the data.
+
+0.3.3:
+- Fixed bazaar support for Forge.
+- Fixed fuzzy search over-eagerly matching attacks to items, "Claw" will no longer return "Plasmaclaw Rifle".
+- Fixed issue where offensive abilities would not parse if immediately followed by Spell-Like abilities.
+- Updated Special Abilities section parsing to include the custom description along with the official description if available.
+- Added support for description parsing.
+- Added support for the "plus <x>" section of attacks, "slam plus grab" will now show up as "Slam (plus Grab)" on the NPCs attacks.
+
+0.3.2:
+- Fixed damage roll parsing.
+- Now marking tactics as GM Secret in the Biography page.
+- Added support for "before combat" tactics.
+
+0.3.1:
+- Improved handling of attacks: Now supports universal monster rules in attacks.
+- Improved handling of defensive abilities, trailing ; are now ignored.
+
+0.3.0:
+- Prepared repository for public release.
+
+0.2.11:
+- Cleaned up subtype parsing, subtypes are stored but the NPC sheet doesn't display it, it only has a field for Type.
+- Added Feats to the supported keywords set for the Statistics block.
+
+0.2.10:
+- Added basic support for PCGen, feel free to add fields with pull requests if you use this software, I do not have it, so I don't have enough source material to develop it further.
+- Added a couple of hooks for Herolab exports, it's similar enough to Paizo-Style that is parses reasonably okay, with a couple of minor exceptions for which I have now accounted. (As far as I am aware of them anyway)
+- Fixed a parsing error when there's unexpected whitespaces in the statblocks.
+
+0.2.9:
+- Created PCGen parsing framework.
+- Fixing completely non-functional vttes parser.
+
+0.2.8:
+- Added support for multiattacks to Paizo-style statblocks.
+
+0.2.7:
+- Added error reporting when it fails to create items or spells.
+- Added support for 'and' in series of data.
+- Added support for the special abilities block, added support for tactics (morale, combat), ecology (organization, environment), and connection. These are now parsed into the Biography section.
+- Added proper support for limited telepathy as a language.
+- Fixed a minor weapon parsing bug w.r.t. critical damage caused by 0.2.6's fix to double attack bonuses
+- Fixed multiattack text getting merged into the ranged attack
+- Did some code clean-up.
+
+0.2.6:
+- Removed double attack bonuses from NPC attacks.
+- Better handling for PDF's funny - symbols.
+
+0.2.5:
+- Added support for spell-like abilities.
+- Added support for normal abilities.
+- Added security, only users with Create Token permissions can parse statblocks.
+- Added times per day info on spells.
+
+0.2.4:
+- Added support for spells.
+- Fixed gear parsing no longer splitting armor into arm and or.
+- Improved handling of , separated values.
+- Cleaned up code.
+
+0.2.3 and older:
+- Core foundation of the module.

@@ -1,0 +1,39 @@
+<form class="pf2e-sbp-form">
+
+    <h2 class="pf2e-sbp-title">PF2e Statblock Parser</h2>
+
+    <div class="form-group">
+        <label for="dataFormat">Formato de Entrada</label>
+        <select name="dataFormat" id="dataFormat">
+            {{#each formats}}
+            <option value="{{this.id}}">{{this.name}}</option>
+            {{/each}}
+        </select>
+    </div>
+
+    <div class="form-group pf2e-sbp-examples">
+        <button type="button" id="sbp-copy-example" class="pf2e-sbp-example-btn" title="Copia un statblock de ejemplo al portapapeles">
+            <i class="fas fa-copy"></i> Ejemplo Normal
+        </button>
+        {{#if aztecsMode}}
+        <button type="button" id="sbp-copy-aztecs-example" class="pf2e-sbp-example-btn pf2e-sbp-aztecs-btn" title="Copia un statblock de ejemplo con partes (aztecs) al portapapeles">
+            <i class="fas fa-puzzle-piece"></i> Ejemplo con Partes
+        </button>
+        {{/if}}
+    </div>
+
+    <div class="form-group">
+        <label for="statblock">Pega aquí el statblock PF2e:</label>
+        <textarea name="statblock" id="statblock" rows="18" placeholder="Pega o escribe el statblock aquí...&#10;&#10;Usa los botones de arriba para ver un ejemplo del formato esperado."></textarea>
+    </div>
+
+    <div class="form-group pf2e-sbp-buttons">
+        <button type="submit" class="pf2e-sbp-submit">
+            <i class="fas fa-check"></i> Parsear Statblock
+        </button>
+        <button type="button" class="pf2e-sbp-cancel" onclick="ui.activeWindow?.close();">
+            <i class="fas fa-times"></i> Cancelar
+        </button>
+    </div>
+
+</form>
