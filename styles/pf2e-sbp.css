@@ -19,3 +19,25 @@
     opacity: 1;
     text-decoration: underline !important;
 }
+
+/* ── Patreon support link ────────────────────────────────────────────────── */
+.pf2e-sbp-patreon {
+    margin-top: 4px;
+    text-align: center;
+}
+
+.pf2e-sbp-patreon-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.72em;
+    color: #f96854 !important;
+    text-decoration: none !important;
+    opacity: 0.6;
+    transition: opacity 0.15s;
+}
+
+.pf2e-sbp-patreon-link:hover {
+    opacity: 1;
+    text-decoration: underline !important;
+}
