@@ -1,7 +1,10 @@
 // module/statblockparser.js
 
 import { PF2eUtils } from "./utils.js";
-import StatTables from '../Bvuilder/scripts/tables.js';
+
+const _SKILL_NAMES  = ["acrobatics","arcana","athletics","crafting","deception","diplomacy","intimidation","lore","medicine","nature","occultism","performance","religion","society","stealth","survival","thievery"];
+const _STAT_SCALE   = ["extreme","high","moderate","low"];
+const _DAMAGE_TYPES = ["bludgeoning","piercing","slashing","acid","cold","electricity","fire","sonic","chaotic","evil","good","lawful","mental","poison","bleed","force","negative","positive","vitality","void"];
 
 /**
  * Parser completo para statblocks de PF2e.
@@ -879,8 +882,8 @@ export class PF2eStatblockParser {
                 trained: true,
                 name,
                 value: this.mapStatToBuilderScale(bonus),
-                allowedNames: StatTables.allSkillsList,
-                allowedValues: StatTables.getAllowedValuesByStat('skill')
+                allowedNames: _SKILL_NAMES,
+                allowedValues: _STAT_SCALE
             };
             i++;
         }
@@ -903,11 +906,11 @@ export class PF2eStatblockParser {
                 name,
                 bonus: {
                     value: this.mapStatToBuilderScale(bonus),
-                    allowedValues: StatTables.getAllowedValuesByStat('strike')
+                    allowedValues: _STAT_SCALE
                 },
                 damage: {
                     value: this.mapDamageToBuilderScale(damageFormula, builderStats.level),
-                    allowedValues: StatTables.getAllowedValuesByStat('strike')
+                    allowedValues: _STAT_SCALE
                 },
                 range: {
                     value: lower.startsWith("ranged") ? "ranged" : "melee",
@@ -915,7 +918,7 @@ export class PF2eStatblockParser {
                 },
                 type: {
                     value: rawType,
-                    allowedValues: StatTables.allDamageTypesList
+                    allowedValues: _DAMAGE_TYPES
                 }
             };
             i++;
