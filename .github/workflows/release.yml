@@ -1,4 +1,4 @@
-name: Release Module
+name: Release
 
 on:
   push:
@@ -14,40 +14,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Get version from tag
-        id: version
+      - name: Extract version
+        id: ver
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
-      - name: Update module.json for release
+      - name: Build module.zip
         run: |
-          VERSION="${{ steps.version.outputs.VERSION }}"
-          REPO="${{ github.repository }}"
-          jq \
-            --arg ver "$VERSION" \
-            --arg dl "https://github.com/$REPO/releases/download/v$VERSION/module.zip" \
-            '.version = $ver | .download = $dl' \
-            module.json > module.tmp.json
-          mv module.tmp.json module.json
+          zip -r module.zip . \
+            --exclude "*.git*" \
+            --exclude ".github/*" \
+            --exclude ".gitignore" \
+            --exclude ".claude/*" \
+            --exclude "bvuilder/*" \
+            --exclude "module.zip"
 
-      - name: Create module.zip
-        run: |
-          zip -r module.zip \
-            module.json \
-            module/main.js \
-            module/statblockparser.js \
-            module/text-input.js \
-            module/parsers.js \
-            module/utils.js \
-            templates/ \
-            styles/ \
-            LICENSE \
-            README.md \
-            CHANGELOG
-
-      - name: Create GitHub Release
+      - name: Create release
         uses: softprops/action-gh-release@v2
         with:
+          name: "PF2e Statblock Parser v${{ steps.ver.outputs.VERSION }}"
           tag_name: ${{ github.ref_name }}
-          name: "v${{ steps.version.outputs.VERSION }}"
           files: module.zip
-          generate_release_notes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
