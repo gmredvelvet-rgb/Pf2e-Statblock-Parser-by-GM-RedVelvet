@@ -64,111 +64,114 @@ The heat causes the wyvern's venom sacs to rupture. All creatures within 10 feet
 //   REGLA HP: la suma de HP de todas las partes debe ser igual al HP del monstruo
 //             (300 = 40+120+45+45+25+25 en este ejemplo)
 // ─────────────────────────────────────────────────────────────────────────────
-const EXAMPLE_AZTECS = `Iron Colossus                         Creature 12
-Neutral, Huge Construct
+const EXAMPLE_AZTECS = `Frostfang Dire Wolf                Creature 5
+Neutral, Large Beast
 
-Perception +22; darkvision, tremorsense (imprecise) 60 ft.
+Perception +14; low-light vision, scent (imprecise) 60 ft.
 Languages —
-Skills Athletics +26, Intimidation +22
-Str +9, Dex -1, Con +7, Int -4, Wis +4, Cha +0
-AC 32; Fort +25, Ref +17, Will +20
-HP 300
-Speed 30
+Skills Acrobatics +12, Athletics +15, Stealth +11, Survival +13
+Str +5, Dex +3, Con +4, Int -3, Wis +2, Cha +1
 
-Immunities bleed, death effects, disease, doomed, drained, fatigued, mental, paralyzed, poison, unconscious
-Weaknesses electricity 15, vitality 15
-Resistances physical 10 (except adamantine)
+AC 22
+Fort +15, Ref +12, Will +10
 
-Melee [one-action] Iron Fist +25 (reach 15 ft.), Damage 3d10+15 bludgeoning
-Melee [one-action] Stomp +23 (reach 5 ft.), Damage 3d8+15 bludgeoning
-Ranged [one-action] Ballista Bolt +18 (range 120 ft.), Damage 3d8+10 piercing
+HP 100
 
-Siege Engine
-The Iron Colossus ignores the first 5 points of hardness from any structure it attacks. When it critically hits a creature, that creature is knocked prone and pushed 10 feet.
+Speed 40 ft.
 
-Relentless March [one-action] (move)
-The Colossus Strides up to 30 feet ignoring difficult terrain. Any creature in its path must succeed a DC 30 Reflex save or take 2d10+15 bludgeoning damage and become off-guard until the end of their next turn.
+Immunities cold
+Weaknesses fire 5
 
-Steam Punch [two-actions] (attack)
-The Colossus vents superheated steam and delivers a devastating blow. Make an Iron Fist Strike with a +2 circumstance bonus. On a hit, the target is pushed 10 feet and becomes stunned 1. On a critical hit, they are also knocked prone.
+Melee [one-action] Jaws +15 (reach 10 ft.)
+Damage 2d10+7 piercing plus Knockdown
 
-Siege Mode [three-actions] (transformation)
-The Colossus locks its legs and becomes a stationary siege platform until it uses this ability again. It gains a +4 circumstance bonus to Fortitude saves, resistances increase by 5, and all ranged attacks deal an additional 2d8 piercing damage. It cannot use movement actions while in Siege Mode.
+Melee [one-action] Claw +15 (agile)
+Damage 2d6+7 slashing
 
-Retaliation Strike [reaction]
-Trigger: A creature within 15 feet critically hits the Colossus.
-The Colossus retaliates immediately with an Iron Fist Strike against the triggering creature before they can move away.
+Frozen Breath [two-actions] (cold)
+30-foot cone
+DC 22 Reflex
+4d8 cold damage
 
-Emergency Venting [free-action]
-Trigger: The Colossus takes electricity damage.
-The Colossus vents excess energy as a burst of scorching steam. All creatures within 10 feet take 2d6 fire damage (DC 28 basic Reflex save).
+Ice Pounce [two-actions]
+Stride twice and make a Jaws Strike.
 
 PARTS:
+Maximum HP Pool: 100
+
 --- Head ---
-HP: 40
+HP: 15
 AC: +3
-Immunity: mental
-Threshold 20: stunned 1
-Destroy: blinded, confused
+Threshold 8: dazzled
+Destroy: blinded
 
 --- Torso ---
-HP: 120
+HP: 35
 AC: 0
-Resistance: physical 15
-Threshold 60: slowed 1
-Destroy: slowed 2, sickened 1
-
---- Left Arm ---
-HP: 45
-AC: +1
-Weakness: slashing 10
-Threshold 20: enfeebled 2
-Destroy: immobilized
-
---- Right Arm ---
-HP: 45
-AC: +1
-Weakness: slashing 10
-Threshold 20: enfeebled 2
-Destroy: immobilized
-
---- Left Leg ---
-HP: 25
-AC: -1
-Weakness: bludgeoning 10
+Resistance: physical 5
+Threshold 18: slowed 1
 Destroy: slowed 2
 
---- Right Leg ---
-HP: 25
-AC: -1
-Weakness: bludgeoning 10
-Destroy: slowed 2
+--- Left Foreleg ---
+HP: 10
+AC: +1
+Threshold 5: clumsy 1
+Destroy: slowed 1
+
+--- Right Foreleg ---
+HP: 10
+AC: +1
+Threshold 5: clumsy 1
+Destroy: slowed 1
+
+--- Left Hind Leg ---
+HP: 10
+AC: 0
+Threshold 5: slowed 1
+Destroy: knocked prone
+
+--- Right Hind Leg ---
+HP: 10
+AC: 0
+Threshold 5: slowed 1
+Destroy: knocked prone
+
+--- Tail ---
+HP: 10
+AC: +2
+Threshold 5: off-guard
+Destroy: loses Ice Pounce
 
 DAMAGE REACTIONS:
---- Emergency Venting ---
-Trigger: 25
-Action: free
-Save: DC 30 Reflex basic
-Damage: aura 15, 2d6 fire
 
---- Steam Burst ---
-Trigger: 30 fire
+--- Ice Shards ---
+Trigger: 20
+Action: free
+Save: DC 22 Reflex basic
+Damage: aura 10, 2d6 cold
+
+--- Frozen Blood ---
+Trigger: 30
 Action: reaction
-Effect: triggerer, blinded
-Save: DC 28 Fortitude
+Effect: aura 15 difficult terrain
 Duration: 1 round
 
---- Shockwave ---
-Trigger: 40
+--- Howl of Pain ---
+Trigger: Head Destroyed
 Action: reaction
-Effect: aura 20, prone
-Damage: aura 20, 3d6 bludgeoning
+Effect: aura 30 frightened 1
+Save: DC 22 Will
 
 DEATH REACTION:
-Name: Catastrophic Collapse
-Effect: aura 40, prone, stunned 2
-Duration: 1 round
-Damage: aura 40, 6d10 bludgeoning`;
+
+Name: Frozen Collapse
+
+Effect: aura 20, prone
+Save: DC 22 Reflex
+Damage: aura 20, 5d8 cold
+
+Critical Failure:
+prone and immobilized 1 round`;
 
 /**
  * Dialog para ingresar el statblock PF2e
