@@ -376,6 +376,10 @@ Damage: aura 40, 6d10 bludgeoning
 
 ---
 
-## License
+## Licensing
 
-See [LICENSE](LICENSE)
+**This module is free.** It needs no subscription, no activation and no account, and it keeps working offline and forever — unlike the subscription-based modules in the Velvet range, it contains no licence check of any kind.
+
+If it earns its keep at your table, support is welcome but never required: [Patreon](https://www.patreon.com/gmredvelvet).
+
+See [LICENSE](LICENSE) for the full terms.
