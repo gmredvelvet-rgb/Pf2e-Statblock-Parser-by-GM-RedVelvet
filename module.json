@@ -4,14 +4,19 @@
   "description": "Convierte statblocks de Pathfinder 2e en Actores (NPC) dentro de Foundry VTT. Soporta parseo estándar y monstruos con partes (pf2e-aztecs-rip-n-tear).",
   "version": "0.1.3",
   "authors": [
-    { "name": "GM RedVelvet", "url": "https://github.com/gmredvelvet-rgb" }
+    {
+      "name": "GM RedVelvet",
+      "url": "https://github.com/gmredvelvet-rgb"
+    }
   ],
   "relationships": {
     "systems": [
       {
         "id": "pf2e",
         "type": "system",
-        "compatibility": { "minimum": "6.0.0" }
+        "compatibility": {
+          "minimum": "6.0.0"
+        }
       }
     ],
     "optional": [
@@ -23,9 +28,13 @@
   },
   "esmodules": [
     "./module/main.js",
-    "./module/text-input.js"
+    "./module/text-input.js",
+    "./scripts/license/boot.js"
   ],
-  "styles": ["./styles/pf2e-sbp.css"],
+  "styles": [
+    "./styles/pf2e-sbp.css",
+    "./styles/license.css"
+  ],
   "packs": [],
   "url": "https://github.com/gmredvelvet-rgb/Pf2e-Statblock-Parser-by-GM-RedVelvet",
   "manifest": "https://raw.githubusercontent.com/gmredvelvet-rgb/Pf2e-Statblock-Parser-by-GM-RedVelvet/main/module.json",
@@ -33,5 +42,17 @@
   "compatibility": {
     "minimum": "12",
     "verified": "13"
-  }
+  },
+  "languages": [
+    {
+      "lang": "es",
+      "name": "Español",
+      "path": "lang/es.json"
+    },
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ]
 }
