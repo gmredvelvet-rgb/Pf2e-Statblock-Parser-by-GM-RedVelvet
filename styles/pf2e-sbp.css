@@ -1,3 +1,18 @@
+/* ── Import dialog ───────────────────────────────────────────────────────── */
+.pf2e-sbp-dialog .pf2e-sbp-title {
+    margin: 0;
+    text-align: center;
+}
+
+.pf2e-sbp-dialog .pf2e-sbp-examples {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.pf2e-sbp-dialog .pf2e-sbp-examples button {
+    flex: 1;
+}
+
 /* ── Ko-fi support link ─────────────────────────────────────────────────── */
 .pf2e-sbp-kofi {
     margin-top: 8px;

@@ -6,9 +6,15 @@ const _SKILL_NAMES  = ["acrobatics","arcana","athletics","crafting","deception",
 const _STAT_SCALE   = ["extreme","high","moderate","low"];
 const _DAMAGE_TYPES = ["bludgeoning","piercing","slashing","acid","cold","electricity","fire","sonic","chaotic","evil","good","lawful","mental","poison","bleed","force","negative","positive","vitality","void"];
 
+// Tipos de daño previos al Remaster que PF2e ya no reconoce
+const _LEGACY_DAMAGE = { negative: "void", positive: "vitality" };
+
+// Secciones de pf2e-aztecs-rip-n-tear: todo lo que va detrás no es statblock estándar
+const _AZTECS_SECTION = /^(?:PARTS|DAMAGE REACTIONS?|DEATH REACTION)\s*:/i;
+
 /**
  * Parser completo para statblocks de PF2e.
- * Compatible con Foundry V11–V13 y sistema PF2e 5.x+
+ * Compatible con Foundry V13–V14 y sistema PF2e 7.x–8.x
  */
 export class PF2eStatblockParser {
 
@@ -81,43 +87,37 @@ export class PF2eStatblockParser {
         const ref = clean.match(/Ref(?:lex)?\s*[:]?\s*\+?(\d+)/i);
         const will = clean.match(/Will\s*[:]?\s*\+?(\d+)/i);
 
-        // Skills
+        // Skills — PF2e 6+ las guarda por slug completo ({ athletics: { base: 17 } }) y solo
+        // las que tiene la criatura: una skill presente con base 0 aparece en la ficha como +0.
         const skills = {};
         const skillLine = clean.match(/^Skills\s*[:]?\s*(.+)$/im);
-        const SKILL_MAP = {
-            athletics: "ath", deception: "dec", intimidation: "itm", stealth: "ste", survival: "sur", acrobatics: "acr", arcana: "arc", crafting: "cra", diplomacy: "dip", medicine: "med", nature: "nat", occultism: "occ", performance: "prf", religion: "rel", society: "soc", thievery: "thi"
-        };
         if (skillLine) {
             const entries = skillLine[1].split(/\s*,\s*/);
             for (const entry of entries) {
                 const m = entry.match(/^([A-Za-z]+)\s+([+\-]?\d+)/);
                 if (!m) continue;
                 const name = m[1].toLowerCase();
-                const bonus = Number(m[2]);
-                const key = SKILL_MAP[name];
-                if (!key) continue;
-                skills[key] = { base: bonus, mod: bonus, visible: true };
+                if (name === "lore" || !_SKILL_NAMES.includes(name)) continue;
+                skills[name] = { base: Number(m[2]) };
             }
         }
-        // Inicializar skills faltantes y asegurar estructura
-        const ALL_SKILLS = [
-            "acr", "arc", "ath", "cra", "dec", "dip", "itm", "med",
-            "nat", "occ", "prf", "rel", "soc", "ste", "sur", "thi"
-        ];
-        ALL_SKILLS.forEach(k => {
-            if (!skills[k]) skills[k] = { base: 0, mod: 0, visible: true };
-        });
 
         // Immunities, Weaknesses, Resistances
         const immunities = [];
         const weaknesses = [];
         const resistances = [];
-        const linesArr = clean.split("\n").map(l => l.trim());
+        const allLines = clean.split("\n").map(l => l.trim());
+        // Las partes de aztecs tienen sus propios Immunity/Resistance/Damage: no son del actor
+        const aztecsAt = allLines.findIndex(l => _AZTECS_SECTION.test(l));
+        const linesArr = aztecsAt === -1 ? allLines : allLines.slice(0, aztecsAt);
 
-        const typeSlug = (s) => s.toLowerCase().trim()
-            .replace(/\s+damage$/i, "")   // quita "damage" al final
-            .replace(/\s+/g, "-")
-            .replace(/[^a-z0-9\-]/g, "");
+        const typeSlug = (s) => {
+            const slug = s.toLowerCase().trim()
+                .replace(/\s+damage$/i, "")   // quita "damage" al final
+                .replace(/\s+/g, "-")
+                .replace(/[^a-z0-9\-]/g, "");
+            return slug === "all" ? "all-damage" : slug;   // "all damage 5" es el tipo "all-damage"
+        };
 
         const parseImmunities = (text) => {
             text.split(",").forEach(e => {
@@ -135,13 +135,15 @@ export class PF2eStatblockParser {
         };
 
         const parseResistances = (text) => {
-            text.split(",").forEach(e => {
+            // separa por comas fuera de paréntesis: "all damage 5 (except force, ghost touch), fire 5"
+            text.split(/,(?![^(]*\))/).forEach(e => {
                 // soporta "physical 5 (except adamantine)"
                 const m = e.trim().match(/^(.+?)\s+(\d+)(?:\s*\(([^)]+)\))?$/);
                 if (m) resistances.push({
                     type: typeSlug(m[1]),
                     value: Number(m[2]),
-                    exceptions: m[3] ? m[3].replace(/except\s*/i,"").split(/[,\s]+/).map(typeSlug).filter(Boolean) : []
+                    // "except cold iron" → ["cold-iron"]; "except force or ghost touch" → ["force", "ghost-touch"]
+                    exceptions: m[3] ? m[3].replace(/except\s*/i,"").split(/\s*,\s*|\s+or\s+/).map(typeSlug).filter(Boolean) : []
                 });
             });
         };
@@ -158,90 +160,108 @@ export class PF2eStatblockParser {
             }
         }
 
-        // Traits, senses, languages
+        // Traits, rareza, sentidos, idiomas
         const SIZE_CODES = { tiny: "tiny", small: "sm", medium: "med", large: "lg", huge: "huge", gargantuan: "grg" };
+        const RARITIES = ["uncommon", "rare", "unique"];
         let size = "med";
+        let rarity = "common";
         let traits = [];
-        let senses = [];
-        let languages = [];
         for (let i = 0; i < Math.min(lines.length, 5); i++) {
             const line = lines[i].toLowerCase();
             const foundSize = ["tiny","small","medium","large","huge","gargantuan"].find(s => line.includes(s));
             if (foundSize) {
                 size = SIZE_CODES[foundSize] || "med";
-                traits = line.split(/[\s,;]+/)
-                    .map(t => t.replace(/[^a-z0-9\-]/g, "").trim())
-                    .filter(t => t && !["creature", foundSize, "neutral", "lawful", "chaotic", "good", "evil", "unaligned"].includes(t));
+                const words = line.split(/[\s,;]+/).map(t => t.replace(/[^a-z0-9\-]/g, "").trim());
+                rarity = words.find(t => RARITIES.includes(t)) ?? "common";
+                traits = words.filter(t => t && !["creature", foundSize, "common", ...RARITIES, "neutral", "lawful", "chaotic", "good", "evil", "unaligned"].includes(t));
             }
         }
-        // Perception senses
+
+        // Sentidos: "darkvision, scent (imprecise) 60 ft." → [{ type, acuity, range }].
+        // Lo que PF2e no reconoce como sentido va al texto de detalles de percepción.
+        const senses = [];
+        const senseDetails = [];
         const perceptionLine = linesArr.find(l => l.toLowerCase().startsWith("perception"));
-        if (perceptionLine) {
-            const sensesPart = perceptionLine.split(";")[1];
-            if (sensesPart) senses = sensesPart.split(",").map(s => s.trim()).filter(Boolean);
-        }
-        // Languages
-        const langLine = linesArr.find(l => l.toLowerCase().startsWith("languages"));
-        if (langLine) {
-            languages = langLine.replace(/^Languages\s*:?/i, "").split(",").map(l => l.trim()).filter(Boolean);
+        const sensesPart = perceptionLine?.split(";").slice(1).join(";") ?? "";
+        for (const raw of sensesPart.split(",").map(s => s.trim()).filter(Boolean)) {
+            const m = raw.match(/^(.+?)\s*(?:\((precise|imprecise|vague)\))?\s*(?:(\d+)\s*(?:ft\.?|feet)?)?\.?$/i);
+            const type = this.slugifyTrait(m?.[1] ?? raw);
+            if (!m || !CONFIG.PF2E?.senses?.[type]) { senseDetails.push(raw); continue; }
+            const sense = { type };
+            if (m[2]) sense.acuity = m[2].toLowerCase();
+            if (m[3]) sense.range = Number(m[3]);
+            senses.push(sense);
         }
 
-        // Estructura mínima para evitar crashes
+        // Idiomas: PF2e 6+ los guarda como slugs en details.languages. Telepatía y demás
+        // (lo que va tras ";" o no es un idioma conocido) van al texto de detalles.
+        const languages = [];
+        const languageDetails = [];
+        const langLine = linesArr.find(l => l.toLowerCase().startsWith("languages"));
+        if (langLine) {
+            const [list, ...extra] = langLine.replace(/^Languages\s*:?\s*/i, "").split(";");
+            for (const raw of list.split(",").map(l => l.trim()).filter(Boolean)) {
+                const slug = this.slugifyTrait(raw);
+                if (!slug) continue;   // "—"
+                if (CONFIG.PF2E?.languages?.[slug]) languages.push(slug);
+                else languageDetails.push(raw);
+            }
+            languageDetails.push(...extra.map(s => s.trim()).filter(Boolean));
+        }
+
+        // Velocidades extra: "Speed 25 feet, fly 60 feet, swim 30 feet"
+        const otherSpeeds = [];
+        const speedLine = linesArr.find(l => /^Speed\b/i.test(l)) ?? "";
+        for (const [, type, value] of speedLine.matchAll(/\b(burrow|climb|fly|swim)\s+(\d+)/gi)) {
+            otherSpeeds.push({ type: type.toLowerCase(), value: Number(value) });
+        }
+
+        // Estructura de NPC de PF2e 7.x–8.x
         const actorDataFinal = {
             name: actorName,
             type: "npc",
             system: {
                 attributes: {
                     ac: { details: "", value: ac },
-                    speed: { value: speed, otherSpeeds: [], details: "" },
-                    hp: { details: "", value: hp, max: hp },
+                    speed: { value: speed, otherSpeeds, details: "" },
+                    hp: { details: "", value: hp, max: hp, temp: 0 },
                     immunities,
                     weaknesses,
-                    resistances,
-                    perception: { value: perception },
+                    resistances
                 },
                 abilities,
-                perception: { mod: perception },
+                perception: { mod: perception, senses, details: senseDetails.join(", ") },
                 saves: {
                     fortitude: { saveDetail: "", value: fort ? Number(fort[1]) : 0 },
                     reflex: { saveDetail: "", value: ref ? Number(ref[1]) : 0 },
                     will: { saveDetail: "", value: will ? Number(will[1]) : 0 }
                 },
-                details: { level: { value: actorLevel }, publicNotes: "", privateNotes: "" },
+                details: {
+                    level: { value: actorLevel },
+                    languages: { value: languages, details: languageDetails.join(", ") },
+                    publicNotes: "",
+                    privateNotes: ""
+                },
                 skills,
                 traits: {
                     size: { value: size },
-                    value: traits,
-                    languages: { value: languages, custom: "" }
+                    rarity,
+                    value: traits
                 }
             }
         };
 
         // Items embebidos: strikes
         const items = [];
-        for (const line of linesArr) {
-            const m = line.match(/(Melee|Ranged)\s*(?:\[.*?\]|\u25C6+|1|2|3)?\s*([^\d\+]+?)\s*\+(\d+).*?Damage\s+([0-9d+\-]+)\s*([A-Za-z]+)/i);
-            if (!m) continue;
-            const name = m[2].trim();
-            const bonus = Number(m[3]);
-            const damageFormula = m[4];
-            const rawType = m[5].toLowerCase();
-            items.push({
-                type: "melee",
-                name,
-                img: "systems/pf2e/icons/actions/Strike.webp",
-                system: {
-                    traits: { value: [] },
-                    bonus: { value: bonus },
-                    damageRolls: {
-                        "0": {
-                            damage: damageFormula,
-                            damageType: rawType
-                        }
-                    },
-                    weaponType: { value: m[1].toLowerCase() === "ranged" ? "ranged" : "melee" }
-                }
-            });
+        for (let i = 0; i < linesArr.length; i++) {
+            let line = linesArr[i];
+            if (!/^(Melee|Ranged)\b/i.test(line)) continue;
+            // Hay statblocks que ponen el daño en la línea siguiente:
+            // "Melee [one-action] Jaws +15 (reach 10 ft.)" / "Damage 2d10+7 piercing"
+            const next = linesArr.slice(i + 1).find(Boolean) ?? "";
+            if (!/\bDamage\s+\d/i.test(line) && /^Damage\s+\d/i.test(next)) line += `, ${next}`;
+            const strike = this._buildStrike(line);
+            if (strike) items.push(strike);
         }
 
         // Items embebidos: habilidades especiales y acciones
@@ -267,41 +287,29 @@ export class PF2eStatblockParser {
         if (!text) return "";
         let r = text;
 
-        // Daño persistente: "2d6 persistent bleed damage" / "2d6 persistent fire damage"
-        // DEBE ir ANTES del patrón normal para que el "persistent" no quede suelto
+        // Daño → @Damage, el único formato que PF2e trata como tirada de daño (botones de
+        // aplicar daño, IWR). Mismo estilo que Monster Core:
+        //   "2d8+6 bludgeoning"          → @Damage[(2d8+6)[bludgeoning]]
+        //   "2d6 persistent fire damage" → @Damage[2d6[persistent,fire]] damage
+        //   "2d6 bleed"                  → @Damage[2d6[persistent,bleed]]  (bleed siempre es persistente)
         r = r.replace(
-            /(\d+d\d+(?:[+\-]\d+)?)\s+persistent\s+(bleed|slashing|piercing|bludgeoning|fire|cold|electricity|sonic|poison|acid|mental|force|void|vitality)\s*(?:damage)?/gi,
-            (_, formula, type) => `[[/r ${formula}[${type.toLowerCase()},persistent]]]`
-        );
-
-        // Bleed siempre es persistente aunque no lleve la palabra "persistent"
-        // "2d6 bleed damage" → [[/r 2d6[bleed,persistent]]]
-        r = r.replace(
-            /(\d+d\d+(?:[+\-]\d+)?)\s+bleed\s*(?:damage)?(?!\s*\])/gi,
-            (_, formula) => `[[/r ${formula}[bleed,persistent]]]`
-        );
-
-        // Daño normal: "2d8+6 bludgeoning" → [[/r 2d8+6[bludgeoning]]]
-        r = r.replace(
-            /(\d+d\d+(?:[+\-]\d+)?)\s*(slashing|piercing|bludgeoning|fire|cold|electricity|sonic|poison|acid|mental|force|negative|positive|void|vitality|spirit)/gi,
-            (_, formula, type) => `[[/r ${formula}[${type.toLowerCase()}]]]`
-        );
-
-        // Tirada básica: "DC 22 basic Reflex save" / "DC 22 Reflex save"
-        r = r.replace(
-            /DC\s*(\d+)\s+(?:basic\s+)?(Reflex|Fortitude|Fort(?:itude)?|Will|Perception)\s+save/gi,
-            (_, dc, raw) => {
-                const type = /^fort/i.test(raw) ? "fortitude" : raw.toLowerCase();
-                return `@Check[type:${type}|dc:${dc}|basic:true]{DC ${dc} ${raw} save}`;
+            /(\d+d\d+(?:\s*[+\-]\s*\d+)?)\s*(persistent\s+)?(bleed|slashing|piercing|bludgeoning|fire|cold|electricity|sonic|poison|acid|mental|force|negative|positive|void|vitality|spirit)\b/gi,
+            (_, formula, persistent, rawType) => {
+                const type = _LEGACY_DAMAGE[rawType.toLowerCase()] ?? rawType.toLowerCase();
+                const dice = formula.replace(/\s+/g, "");
+                const term = /[+\-]/.test(dice) ? `(${dice})` : dice;
+                const flavor = (persistent || type === "bleed") ? `persistent,${type}` : type;
+                return `@Damage[${term}[${flavor}]]`;
             }
         );
 
-        // Save sin "save": "DC 22 Reflex"
+        // Salvación: "DC 22 basic Reflex save" / "DC 22 Reflex save" → "@Check[reflex|dc:22|basic] save"
+        // (sin etiqueta propia: PF2e la genera y respeta el ajuste de ocultar CDs)
         r = r.replace(
-            /\bDC\s*(\d+)\s+(Reflex|Fortitude|Fort(?:itude)?|Will)\b(?!\s*save|\])/gi,
-            (_, dc, raw) => {
+            /\bDC\s*(\d+)\s+(basic\s+)?(Reflex|Fort(?:itude)?|Will)\b/gi,
+            (_, dc, basic, raw) => {
                 const type = /^fort/i.test(raw) ? "fortitude" : raw.toLowerCase();
-                return `@Check[type:${type}|dc:${dc}]{DC ${dc} ${raw}}`;
+                return `@Check[${type}|dc:${dc}${basic ? "|basic" : ""}]`;
             }
         );
 
@@ -347,7 +355,7 @@ export class PF2eStatblockParser {
             if (!COND_UUID[cond]) continue;
             r = r.replace(
                 new RegExp(`\\b${cond}\\s+(\\d+)`, "gi"),
-                (_, val) => `@UUID[${uuid(cond)}]{${cap(cond)}${val}}`
+                (_, val) => `@UUID[${uuid(cond)}]{${cap(cond)} ${val}}`
             );
         }
 
@@ -383,7 +391,8 @@ export class PF2eStatblockParser {
             /^PARTS\s*:/i,
             /^---/,                         // separadores de partes aztecs
             /^[A-Z][A-Z\s]{3,}$/, // todo-mayúsculas: "INSTINCT ACTIONS"
-            /^\d/,
+            /^Damage\s+\d/,                 // segunda línea de un Strike: "Damage 2d10+7 piercing"
+            /^\d+(?:st|nd|rd|th)\s/i,       // rangos de conjuros: "4th confusion, fear"
         ];
 
         // Palabras que inician descripción, nunca nombre de habilidad
@@ -421,7 +430,8 @@ export class PF2eStatblockParser {
             if (!line || !isHeader(line)) { i++; continue; }
 
             // Parsear cabecera — regex greedy para capturar nombre completo
-            const headerMatch = line.match(/^([A-Z][^\[\(]+)(?:\[([^\]]+)\])?(?:\(([^)]+)\))?\s*(.*)$/);
+            // "Darting Strike [one-action] (move)" — el espacio antes de "(" es opcional
+            const headerMatch = line.match(/^([A-Z][^\[\(]+)(?:\[([^\]]+)\])?\s*(?:\(([^)]+)\))?\s*(.*)$/);
             if (!headerMatch) { i++; continue; }
 
             let name = headerMatch[1].trim();
@@ -1398,6 +1408,58 @@ export class PF2eStatblockParser {
     }
 
     // =========================================================================
+    // STRIKE: item "melee" de PF2e 7.x–8.x
+    // =========================================================================
+
+    /**
+     * "Melee [one-action] Jaws +17 (agile, reach 10 ft.), Damage 2d8+9 piercing"
+     * "Ranged [one-action] Spine Shot +15 (range increment 60 ft.), Damage 2d4+6 piercing"
+     * @param {string} line
+     * @returns {object|null}  Datos del item, o null si la línea no es un Strike completo.
+     */
+    _buildStrike(line) {
+        const m = line.match(/^(Melee|Ranged)\s*(?:\[[^\]]*\]|◆+|[123])?\s*([^\d+(]+?)\s*\+(\d+)\s*(?:\(([^)]*)\))?.*?Damage\s+([0-9d+\-]+)\s*([A-Za-z]+)/i);
+        if (!m) {
+            this.errors.push(["StrikeParse", `Cannot parse strike line: ${line}`]);
+            return null;
+        }
+        const [, kind, name, bonus, traitsText = "", damage, rawType] = m;
+
+        // PF2e decide que un Strike es a distancia porque system.range no es null
+        // ("range increment 60 ft." → increment, "range 60 ft." → max). El resto son rasgos:
+        // "agile, reach 10 ft." → ["agile", "reach-10"]
+        const range = /^ranged$/i.test(kind) ? { increment: null, max: null } : null;
+        // El esquema de PF2e solo acepta múltiplos de 5 entre 5 y 500: otro valor rechaza el item entero
+        const validRange = (n) => n >= 5 && n <= 500 && n % 5 === 0 ? n : null;
+        const traits = [];
+        for (const raw of traitsText.split(",")) {
+            const t = raw.trim().replace(/\s*(?:ft\.?|feet)$/i, "");
+            const increment = t.match(/^range\s+increment\s+(\d+)$/i);
+            const max = t.match(/^range\s+(\d+)$/i);
+            if (range && increment) range.increment = validRange(Number(increment[1]));
+            else if (range && max) range.max = validRange(Number(max[1]));
+            else if (t) traits.push(this.slugifyTrait(t));
+        }
+
+        // "Damage 2d6+4 plus Grab" no trae tipo: PF2e usa "untyped" para eso
+        const type = _LEGACY_DAMAGE[rawType.toLowerCase()] ?? rawType.toLowerCase();
+        const damageTypes = CONFIG.PF2E?.damageTypes;
+        return {
+            type: "melee",
+            name: name.trim(),
+            img: "systems/pf2e/icons/default-icons/melee.svg",
+            system: {
+                bonus: { value: Number(bonus) },
+                damageRolls: {
+                    [foundry.utils.randomID()]: { damage, damageType: (!damageTypes || damageTypes[type]) ? type : "untyped" }
+                },
+                range,
+                traits: { value: traits }
+            }
+        };
+    }
+
+    // =========================================================================
     // CREACIÓN DE ITEM DE ACCIÓN (PF2e moderno)
     // =========================================================================
 
@@ -1411,15 +1473,17 @@ export class PF2eStatblockParser {
             actionData = { value: val };
         }
 
+        const ICONS = { passive: "Passive", reaction: "Reaction", free: "FreeAction", 1: "OneAction", 2: "TwoActions", 3: "ThreeActions" };
+
         return {
             type: "action",
             name,
-            img: "systems/pf2e/icons/actions/Passive.webp",
+            img: `systems/pf2e/icons/actions/${ICONS[actionData.value ?? finalActionType]}.webp`,
             system: {
                 actionType: { value: finalActionType },
                 actions: actionData,
                 traits: { value: traits },
-                description: { value: description || "" }
+                description: { value: description ? `<p>${description}</p>` : "" }
             }
         };
     }

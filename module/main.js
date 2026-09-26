@@ -1,4 +1,4 @@
-// main.js — PF2E Statblock Parser — FINAL VERSION (PF2e 5.x + Foundry V13 Ready)
+// main.js — PF2E Statblock Parser (Foundry V13–V14, PF2e 7.x–8.x)
 
 import { PF2eStatblockParser } from "./statblockparser.js";
 import { PF2eTextInputDialog } from "./text-input.js";
@@ -7,26 +7,27 @@ import { initParsers } from "./parsers.js";
 
 class PF2eSBProgram {
 
+    /**
+     * El ActorDirectory es ApplicationV2 desde v13: `html` es un HTMLElement, y un render
+     * parcial de la cabecera la reemplaza entera, así que el botón se vuelve a añadir.
+     * Con clase y no id: el directorio puede estar abierto a la vez en la barra y en popout.
+     */
     static ensureParseStatblockVisible(app, html) {
         if (!game.user.isGM) return;
-        const el = html[0] ?? html;
-        if (!el?.querySelector) return;
-        if (el.querySelector("#PF2E-SBP-button")) return;
-
-        const headerActions = el.querySelector(".header-actions") || el.querySelector(".action-buttons");
+        const headerActions = html?.querySelector?.(".directory-header .header-actions");
         if (!headerActions) {
             console.warn("PF2e-SBP | No se encontró cabecera (.header-actions) en Actor Directory.");
             return;
         }
+        if (headerActions.querySelector(".pf2e-sbp-import")) return;
 
         const btn = document.createElement("button");
-        btn.id = "PF2E-SBP-button";
-        btn.classList.add("header-control");
-        btn.innerHTML = `<i class="fas fa-file-import"></i> Import Statblock`;
-        btn.title = "Import PF2e Statblock";
         btn.type = "button";
-        btn.onclick = (ev) => { ev.preventDefault(); PF2eSBProgram.openParser(); };
-        headerActions.appendChild(btn);
+        btn.className = "pf2e-sbp-import";
+        btn.dataset.tooltip = "Import PF2e Statblock";
+        btn.innerHTML = `<i class="fa-solid fa-file-import" inert></i><span>Import Statblock</span>`;
+        btn.addEventListener("click", (ev) => { ev.preventDefault(); PF2eSBProgram.openParser(); });
+        headerActions.append(btn);
     }
 
     static async openParser(folderId = null) {
@@ -122,7 +123,9 @@ Hooks.on("renderActorDirectory", (app, html) => {
     PF2eSBProgram.ensureParseStatblockVisible(app, html);
 });
 
-Hooks.on("ready", () => {
+// Los ajustes se registran en init, como espera Foundry: así existen antes del primer
+// render del sidebar y la ventana de importación puede leerlos sin comprobar nada.
+Hooks.once("init", () => {
     game.settings.register("pf2e-statblock-parser", "aztecsMode", {
         name: "Enable Body Parts parsing (pf2e-aztecs-rip-n-tear)",
         hint: "If the pf2e-aztecs-rip-n-tear module is active, enable parsing of monsters with individual body parts (HP and AC per part).",
@@ -131,6 +134,9 @@ Hooks.on("ready", () => {
         type: Boolean,
         default: false
     });
+});
+
+Hooks.once("ready", () => {
     initParsers();
     PF2eUtils.log("PF2e Statblock Parser inicializado.");
 });

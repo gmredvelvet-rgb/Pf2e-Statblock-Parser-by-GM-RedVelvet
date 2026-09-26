@@ -173,44 +173,57 @@ Damage: aura 20, 5d8 cold
 Critical Failure:
 prone and immobilized 1 round`;
 
+const { ApplicationV2, HandlebarsApplicationMixin } = foundry.applications.api;
+
 /**
- * Dialog para ingresar el statblock PF2e
+ * Dialog para ingresar el statblock PF2e (ApplicationV2, Foundry v13–v14)
  */
-export class PF2eTextInputDialog extends FormApplication {
+export class PF2eTextInputDialog extends HandlebarsApplicationMixin(ApplicationV2) {
 
-    constructor(options = {}) {
-        super(options);
-        this.resolver = options.resolve ?? null;
-    }
-
-    static get defaultOptions() {
-        return mergeObject(super.defaultOptions, {
-            id: "pf2e-statblock-input",
+    static DEFAULT_OPTIONS = {
+        id: "pf2e-statblock-input-{id}",
+        classes: ["pf2e-sbp-dialog"],
+        tag: "form",
+        window: {
             title: "Enter PF2e Statblock",
-            template: "modules/pf2e-statblock-parser/templates/text-input.html",
-            width: 620,
-            height: "auto",
-            closeOnSubmit: false,
-            submitOnChange: false
-        });
+            icon: "fa-solid fa-file-import"
+        },
+        position: { width: 620, height: "auto" },
+        form: {
+            handler: PF2eTextInputDialog.#onSubmit,
+            submitOnChange: false,
+            closeOnSubmit: false
+        },
+        actions: {
+            copyExample: PF2eTextInputDialog.#onCopyExample
+        }
+    };
+
+    static PARTS = {
+        form: { template: "modules/pf2e-statblock-parser/templates/text-input.html" }
+    };
+
+    /** Resuelve la promesa de textInputDialog(); se usa una sola vez. */
+    #resolve;
+
+    constructor({ resolve, ...options } = {}) {
+        super(options);
+        this.#resolve = resolve ?? null;
     }
 
-    static async textInputDialog(options = {}) {
+    static textInputDialog(options = {}) {
         return new Promise(resolve => {
             const dlg = new PF2eTextInputDialog({
-                title: options.title || "Enter PF2e Statblock",
+                window: { title: options.title || "Enter PF2e Statblock" },
                 resolve
             });
-            dlg.render(true);
+            dlg.render({ force: true });
         });
     }
 
-    getData() {
-        const settingReady = game.settings.settings.has("pf2e-statblock-parser.aztecsMode");
-        const aztecsMode = settingReady
-            ? game.settings.get("pf2e-statblock-parser", "aztecsMode") &&
-              !!(game.modules.get("pf2e-aztecs-rip-n-tear")?.active)
-            : false;
+    async _prepareContext(options) {
+        const aztecsMode = game.settings.get("pf2e-statblock-parser", "aztecsMode") &&
+            !!(game.modules.get("pf2e-aztecs-rip-n-tear")?.active);
 
         return {
             formats: [
@@ -220,46 +233,41 @@ export class PF2eTextInputDialog extends FormApplication {
         };
     }
 
-    activateListeners(html) {
-        super.activateListeners(html);
-
-        html.find("#sbp-copy-example").on("click", () => {
-            navigator.clipboard.writeText(EXAMPLE_NORMAL).then(() => {
-                ui.notifications.info("Example statblock copied to clipboard.");
-            }).catch(() => {
-                html.find("textarea[name='statblock']").val(EXAMPLE_NORMAL);
-            });
-        });
-
-        html.find("#sbp-copy-aztecs-example").on("click", () => {
-            navigator.clipboard.writeText(EXAMPLE_AZTECS).then(() => {
-                ui.notifications.info("Parts example statblock copied to clipboard.");
-            }).catch(() => {
-                html.find("textarea[name='statblock']").val(EXAMPLE_AZTECS);
-            });
-        });
+    /** Copia el ejemplo al portapapeles; si el navegador no deja, lo pega en el textarea. */
+    static async #onCopyExample(event, target) {
+        const aztecs = target.dataset.example === "aztecs";
+        const text = aztecs ? EXAMPLE_AZTECS : EXAMPLE_NORMAL;
+        try {
+            await navigator.clipboard.writeText(text);
+            ui.notifications.info(aztecs
+                ? "Parts example statblock copied to clipboard."
+                : "Example statblock copied to clipboard.");
+        } catch {
+            this.element.querySelector("textarea[name='statblock']").value = text;
+        }
     }
 
-    async _updateObject(event, formData) {
-        const text = (formData.statblock || "").trim();
-        const format = formData.dataFormat || "pf2e";
+    static async #onSubmit(event, form, formData) {
+        const text = (formData.object.statblock || "").trim();
+        const format = formData.object.dataFormat || "pf2e";
 
         if (!text) {
             ui.notifications.warn("No ingresaste ningún statblock.");
             return;
         }
 
-        if (this.resolver) {
-            this.resolver({ result: true, text, dataFormat: format });
-        }
-
-        this.close();
+        this.#settle({ result: true, text, dataFormat: format });
+        await this.close();
     }
 
-    close(options = {}) {
-        if (this.resolver) {
-            this.resolver({ result: false });
-        }
-        return super.close(options);
+    /** Cerrar sin enviar (X, Cancel, Esc) cuenta como cancelar. */
+    _onClose(options) {
+        super._onClose(options);
+        this.#settle({ result: false });
+    }
+
+    #settle(value) {
+        this.#resolve?.(value);
+        this.#resolve = null;
     }
 }

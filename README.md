@@ -15,8 +15,9 @@ https://raw.githubusercontent.com/gmredvelvet-rgb/Pf2e-Statblock-Parser-by-GM-Re
 ```
 
 **Requirements:**
-- Foundry VTT v12 or higher
-- **pf2e** system (Pathfinder 2e)
+- Foundry VTT v13 or v14 (verified on 14.368)
+- **pf2e** system 7.x or 8.x (verified on 8.5.1)
+- **velvet-license-hub** 2.0.0 or higher
 
 ---
 
@@ -73,9 +74,9 @@ The parser automatically converts damage text and conditions into interactive PF
 
 | Statblock text | Result |
 |---|---|
-| `2d6 fire damage` | `[[/r 2d6[fire]]]` — clickable roll button |
-| `2d6 persistent bleed damage` | `[[/r 2d6[bleed,persistent]]]` |
-| `DC 24 basic Reflex save` | `@Check[type:reflex\|dc:24\|basic:true]` — save button |
+| `2d6 fire damage` | `@Damage[2d6[fire]] damage` — damage roll with apply buttons |
+| `2d6+4 persistent bleed damage` | `@Damage[(2d6+4)[persistent,bleed]] damage` |
+| `DC 24 basic Reflex save` | `@Check[reflex\|dc:24\|basic] save` — save button |
 | `become frightened 2` | `@UUID[...]{Frightened 2}` — condition link |
 
 ### Full Example (standard statblock)

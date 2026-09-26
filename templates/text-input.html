@@ -1,52 +1,52 @@
-<form class="pf2e-sbp-form">
+<div class="pf2e-sbp-form standard-form">
 
     <h2 class="pf2e-sbp-title">PF2e Statblock Parser</h2>
 
     <div class="form-group">
-        <label for="dataFormat">Formato de Entrada</label>
-        <select name="dataFormat" id="dataFormat">
+        <label for="{{partId}}-dataFormat">Formato de Entrada</label>
+        <select name="dataFormat" id="{{partId}}-dataFormat">
             {{#each formats}}
             <option value="{{this.id}}">{{this.name}}</option>
             {{/each}}
         </select>
     </div>
 
-    <div class="form-group pf2e-sbp-examples">
-        <button type="button" id="sbp-copy-example" class="pf2e-sbp-example-btn" title="Copy an example statblock to the clipboard">
-            <i class="fas fa-copy"></i> Example Statblock
+    <div class="pf2e-sbp-examples">
+        <button type="button" data-action="copyExample" data-example="normal" class="pf2e-sbp-example-btn" data-tooltip="Copy an example statblock to the clipboard">
+            <i class="fa-solid fa-copy" inert></i> Example Statblock
         </button>
         {{#if aztecsMode}}
-        <button type="button" id="sbp-copy-aztecs-example" class="pf2e-sbp-example-btn pf2e-sbp-aztecs-btn" title="Copy an example statblock with body parts (aztecs) to the clipboard">
-            <i class="fas fa-puzzle-piece"></i> Example with Parts
+        <button type="button" data-action="copyExample" data-example="aztecs" class="pf2e-sbp-example-btn pf2e-sbp-aztecs-btn" data-tooltip="Copy an example statblock with body parts (aztecs) to the clipboard">
+            <i class="fa-solid fa-puzzle-piece" inert></i> Example with Parts
         </button>
         {{/if}}
     </div>
 
-    <div class="form-group">
-        <label for="statblock">Paste your PF2e statblock here:</label>
-        <textarea name="statblock" id="statblock" rows="18" placeholder="Paste or type the statblock here...&#10;&#10;Use the buttons above to copy an example of the expected format."></textarea>
+    <div class="form-group stacked">
+        <label for="{{partId}}-statblock">Paste your PF2e statblock here:</label>
+        <textarea name="statblock" id="{{partId}}-statblock" rows="18" placeholder="Paste or type the statblock here...&#10;&#10;Use the buttons above to copy an example of the expected format."></textarea>
     </div>
 
-    <div class="form-group pf2e-sbp-buttons">
+    <footer class="form-footer">
         <button type="submit" class="pf2e-sbp-submit">
-            <i class="fas fa-check"></i> Parse Statblock
+            <i class="fa-solid fa-check" inert></i> Parse Statblock
         </button>
-        <button type="button" class="pf2e-sbp-cancel" onclick="ui.activeWindow?.close();">
-            <i class="fas fa-times"></i> Cancel
+        <button type="button" class="pf2e-sbp-cancel" data-action="close">
+            <i class="fa-solid fa-times" inert></i> Cancel
         </button>
-    </div>
+    </footer>
 
     <div class="pf2e-sbp-kofi">
-        <a href="https://ko-fi.com/thegmstudio" target="_blank" class="pf2e-sbp-kofi-link" title="Support GM RedVelvet on Ko-fi">
-            <i class="fas fa-mug-hot"></i> If you enjoy this module, consider buying me a coffee
+        <a href="https://ko-fi.com/thegmstudio" target="_blank" rel="noopener" class="pf2e-sbp-kofi-link" title="Support GM RedVelvet on Ko-fi">
+            <i class="fa-solid fa-mug-hot" inert></i> If you enjoy this module, consider buying me a coffee
         </a>
     </div>
 
     <div class="pf2e-sbp-patreon">
-        <a href="https://www.patreon.com/c/GMRedVelvet" target="_blank" class="pf2e-sbp-patreon-link" title="Join GM RedVelvet on Patreon">
-            <i class="fab fa-patreon"></i>
+        <a href="https://www.patreon.com/c/GMRedVelvet" target="_blank" rel="noopener" class="pf2e-sbp-patreon-link" title="Join GM RedVelvet on Patreon">
+            <i class="fa-brands fa-patreon" inert></i>
             Join the Patreon — custom modules &amp; content for PF2e, Starfinder 2e and D&amp;D
         </a>
     </div>
 
-</form>
+</div>
